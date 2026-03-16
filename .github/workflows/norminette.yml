@@ -19,9 +19,28 @@ jobs:
         run: norminette
 
       - name: Notify Discord
-        if: env.DISCORD_WEBHOOK != ''
-        uses: Ilshidur/action-discord@master
+        if: env.DISCORD_WEBHOOK_URL != ''
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        with:
-          args: "Norminette: ${{ job.status }} on `${{ github.repository }}` (`${{ github.ref_name }}`)"
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            COLOR=3066993
+            TITLE="✅ Norminette Passed"
+          else
+            COLOR=15158332
+            TITLE="❌ Norminette Failed"
+          fi
+          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"$TITLE\",
+                \"color\": $COLOR,
+                \"fields\": [
+                  { \"name\": \"Repo\",    \"value\": \"${{ github.repository }}\", \"inline\": true },
+                  { \"name\": \"Branch\",  \"value\": \"${{ github.ref_name }}\",   \"inline\": true },
+                  { \"name\": \"Commit\",  \"value\": \"[${{ github.event.head_commit.message }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})\", \"inline\": false },
+                  { \"name\": \"By\",      \"value\": \"${{ github.actor }}\",       \"inline\": true }
+                ]
+              }]
+            }"
