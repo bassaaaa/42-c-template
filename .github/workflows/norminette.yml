@@ -41,8 +41,9 @@ jobs:
             --argjson color "$COLOR" \
             --arg repo "$REPO" \
             --arg branch "$BRANCH" \
-            --arg commit "[$(echo "$COMMIT_MSG" | head -1)]($COMMIT_URL)" \
+            --arg commit "$COMMIT_MSG" \
             --arg actor "$ACTOR" \
+            --arg url "$COMMIT_URL" \
             '{
               embeds: [{
                 title: $title,
@@ -51,7 +52,8 @@ jobs:
                   { name: "Repo",   value: $repo,   inline: true },
                   { name: "Branch", value: $branch, inline: true },
                   { name: "Commit", value: $commit, inline: false },
-                  { name: "By",     value: $actor,  inline: true }
+                  { name: "By",     value: $actor,  inline: true },
+                  { name: "Link",   value: ("[GitHubで確認](" + $url + ")"), inline: false }
                 ]
               }]
             }')
