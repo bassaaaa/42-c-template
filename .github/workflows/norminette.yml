@@ -34,7 +34,7 @@ jobs:
             TITLE="✅ Norminette Passed"
           else
             COLOR=15158332
-            TITLE="❌ Norminette Failed"
+            TITLE="❌ Norminette Error"
           fi
           PAYLOAD=$(jq -n \
             --arg title "$TITLE" \
