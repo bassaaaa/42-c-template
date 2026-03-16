@@ -41,7 +41,7 @@ jobs:
             --argjson color "$COLOR" \
             --arg repo "$REPO" \
             --arg branch "$BRANCH" \
-            --arg commit "[$COMMIT_MSG]($COMMIT_URL)" \
+            --arg commit "[$(echo "$COMMIT_MSG" | head -1)]($COMMIT_URL)" \
             --arg actor "$ACTOR" \
             '{
               embeds: [{
