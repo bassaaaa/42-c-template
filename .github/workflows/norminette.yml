@@ -17,3 +17,11 @@ jobs:
 
       - name: Run norminette
         run: norminette
+
+      - name: Notify Discord
+        if: env.DISCORD_WEBHOOK != ''
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        with:
+          args: "Norminette: ${{ job.status }} on `${{ github.repository }}` (`${{ github.ref_name }}`)"

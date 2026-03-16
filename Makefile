@@ -3,13 +3,16 @@ NAME = program
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
 
+SRCS_DIR = srcs
+INCLUDES_DIR = includes
+
 SRCS =
-OBJS = $(SRCS:.c=.o)
+OBJS = $(addprefix $(SRCS_DIR)/, $(SRCS:.c=.o))
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
+	$(CC) $(CFLAGS) -I $(INCLUDES_DIR) -o $(NAME) $(OBJS)
 
 clean:
 	rm -f $(OBJS)
