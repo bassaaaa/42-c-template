@@ -9,6 +9,8 @@ on:
 jobs:
   norminette:
     runs-on: ubuntu-latest
+    outputs:
+      norm_output: ${{ steps.norminette.outputs.output }}
     steps:
       - uses: actions/checkout@v3
 
@@ -29,49 +31,11 @@ jobs:
           } >> $GITHUB_OUTPUT
           exit $EXIT_CODE
 
-      - name: Notify Discord
-        if: always() && env.DISCORD_WEBHOOK_URL != ''
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
-          REPO: ${{ github.repository }}
-          BRANCH: ${{ github.ref_name }}
-          ACTOR: ${{ github.actor }}
-          JOB_STATUS: ${{ job.status }}
-          NORM_OUTPUT: ${{ steps.norminette.outputs.output }}
-        run: |
-          TRUNCATED=$(printf '```\n%s\n```' "$(echo "$NORM_OUTPUT" | head -c 990)")
-          if [ "$JOB_STATUS" = "success" ]; then
-            COLOR=3066993
-            TITLE="✅ Norminette Passed"
-          else
-            COLOR=15158332
-            TITLE="❌ Norminette Error"
-          fi
-          PAYLOAD=$(jq -n \
-            --arg title "$TITLE" \
-            --argjson color "$COLOR" \
-            --arg repo "$REPO" \
-            --arg branch "$BRANCH" \
-            --arg commit "$COMMIT_MSG" \
-            --arg actor "$ACTOR" \
-            --arg url "$COMMIT_URL" \
-            --arg output "$TRUNCATED" \
-            '{
-              embeds: [{
-                title: $title,
-                color: $color,
-                fields: [
-                  { name: "Repo",   value: $repo,   inline: true },
-                  { name: "Branch", value: $branch, inline: true },
-                  { name: "Commit", value: $commit, inline: false },
-                  { name: "By",     value: $actor,  inline: true },
-                  { name: "Result", value: $output, inline: false },
-                  { name: "\u200b", value: ("[GitHubで確認](" + $url + ")"), inline: false }
-                ]
-              }]
-            }')
-          curl -s -X POST "$DISCORD_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD"
+  notify:
+    needs: norminette
+    if: always()
+    uses: ./.github/workflows/notify-discord.yml
+    with:
+      job_status: ${{ needs.norminette.result }}
+      norm_output: ${{ needs.norminette.outputs.norm_output }}
+    secrets: inherit
