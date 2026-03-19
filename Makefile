@@ -3,8 +3,8 @@ NAME = program
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
 
-SRCS_DIR = srcs
-INCLUDES_DIR = includes
+SRCS_DIR = src
+INCLUDES_DIR = inc
 
 SRCS =
 OBJS = $(addprefix $(SRCS_DIR)/, $(SRCS:.c=.o))
